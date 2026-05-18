@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@clerk/nextjs": "latest",
+    "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "latest",
+    "framer-motion": "^12.38.0",
     "lucide-react": "latest",
     "next": "^15.5.0",
     "react": "^19.0.0",

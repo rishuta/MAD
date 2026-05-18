@@ -9,11 +9,18 @@ This is a very simple college mini-project blog app built with:
 - Supabase Database
 - Vercel Deployment
 
+## Project Structure
+
+- `src/app`: Next.js App Router pages, layouts, route UI, and global styles.
+- `src/client`: Browser-facing React components.
+- `src/server`: Server actions, database helpers, and server-only code.
+- `supabase`: Database schema files for Supabase setup.
+
 ## Step 1: Project Setup
 
 What we built:
 - A new Next.js project structure.
-- Basic folders: `src/app`, `src/components`, and `src/lib`.
+- Basic folders: `src/app`, `src/client`, and `src/server`.
 - Config files for TypeScript, Tailwind CSS, ESLint, and Next.js.
 
 Why it is needed:
@@ -47,7 +54,7 @@ Files:
 - `src/app/sign-in/[[...sign-in]]/page.tsx`
 - `src/app/sign-up/[[...sign-up]]/page.tsx`
 - `middleware.ts`
-- `src/components/Navbar.tsx`
+- `src/client/components/Navbar.tsx`
 
 Environment variables:
 
@@ -71,7 +78,7 @@ Why it is needed:
 - Supabase stores blog data and uploaded cover image URLs.
 
 Files:
-- `src/lib/supabase.ts`
+- `src/server/db/supabase.ts`
 - `supabase/schema.sql`
 
 Environment variables:
@@ -80,7 +87,7 @@ Environment variables:
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-NEXT_PUBLIC_SUPABASE_BUCKET=blog-images
+GEMINI_API_KEY=your_google_ai_studio_key
 ```
 
 In Supabase:
@@ -103,8 +110,8 @@ Why it is needed:
 
 Files:
 - `src/app/page.tsx`
-- `src/components/Navbar.tsx`
-- `src/components/BlogCard.tsx`
+- `src/client/components/Navbar.tsx`
+- `src/client/components/BlogCard.tsx`
 - `src/app/globals.css`
 
 ## Run The Project
@@ -156,8 +163,8 @@ Why it is needed:
 
 Files:
 - `src/app/create/page.tsx`
-- `src/app/create/actions.ts`
-- `src/lib/supabaseAdmin.ts`
+- `src/server/actions/createPost.ts`
+- `src/server/db/supabaseAdmin.ts`
 - `middleware.ts`
 - `supabase/schema.sql`
 
@@ -205,12 +212,12 @@ Why it is needed:
 - Fetching in the homepage Server Component is a good App Router practice because the data loads on the server.
 
 Files:
-- `src/lib/posts.ts`
+- `src/server/db/posts.ts`
 - `src/app/page.tsx`
-- `src/components/BlogCard.tsx`
+- `src/client/components/BlogCard.tsx`
 
 How it works:
-1. `src/lib/posts.ts` has a `getPosts` function.
+1. `src/server/db/posts.ts` has a `getPosts` function.
 2. `getPosts` reads rows from the Supabase `posts` table.
 3. `.order("created_at", { ascending: false })` shows newest posts first.
 4. `src/app/page.tsx` calls `await getPosts()`.
@@ -234,8 +241,56 @@ Then:
 3. Go back to `http://localhost:3000`.
 4. Your newest post should appear first.
 
-The next steps are:
+## Production Deployment On Vercel
 
-1. Single blog page
-2. Edit blog post
-3. Delete blog post
+This app is ready for Vercel as a standard Next.js App Router project. Vercel will run:
+
+```bash
+npm install
+npm run build
+```
+
+Required Vercel environment variables:
+
+```env
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+GEMINI_API_KEY=your_google_ai_studio_key
+```
+
+Security notes:
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` are safe to expose to the browser.
+- `SUPABASE_SERVICE_ROLE_KEY`, `CLERK_SECRET_KEY`, and `GEMINI_API_KEY` must stay server-side and should only be added in Vercel Environment Variables.
+- Do not commit `.env.local`, `.env`, or `.vercel`.
+
+Supabase production setup:
+1. Open your Supabase project.
+2. Go to SQL Editor.
+3. Run `supabase/schema.sql`.
+4. Confirm the `users`, `posts`, and `comments` tables exist.
+5. Confirm the `blog-images` storage bucket exists if you plan to use Supabase-hosted images.
+
+Clerk production setup:
+1. Add the deployed Vercel domain to Clerk's allowed domains/origins if your Clerk project requires it.
+2. Add the Clerk publishable and secret keys to Vercel.
+3. The app already has sign-in and sign-up pages at `/sign-in` and `/sign-up`.
+
+Gemini setup:
+1. Create a Google AI Studio API key.
+2. Add it to Vercel as `GEMINI_API_KEY`.
+3. The Writing Assistant calls Gemini only from `/api/ai-assistant`, so the key is not exposed to the browser.
+4. If Gemini is unavailable, the route returns local fallback suggestions instead of crashing.
+
+Deployment steps:
+1. Push the project to GitHub.
+2. In Vercel, choose **Add New Project**.
+3. Import the GitHub repository.
+4. Keep the framework preset as **Next.js**.
+5. Add all required environment variables for Production, Preview, and Development as needed.
+6. Deploy.
+7. After deployment, open the live URL and test sign-up/login, create post, edit/delete post, comments, dashboard, search, and the Writing Assistant.
